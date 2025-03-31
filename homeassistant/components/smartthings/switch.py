@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
+import logging
 from typing import Any
 
 from pysmartthings import Attribute, Capability, Command, SmartThings
@@ -20,6 +22,8 @@ from . import FullDevice, SmartThingsConfigEntry
 from .const import INVALID_SWITCH_CATEGORIES, MAIN
 from .entity import SmartThingsEntity
 from .util import deprecate_entity
+
+_LOGGER = logging.getLogger(__name__)
 
 CAPABILITIES = (
     Capability.SWITCH_LEVEL,
@@ -171,6 +175,17 @@ async def async_setup_entry(
                     Capability.SWITCH,
                 )
             )
+    # Add custom AC Lighting and AC Beep switches
+    for device in entry_data.devices.values():
+        main_status = device.status.get(MAIN, {})
+        if "samsungce.airConditionerLighting" in main_status:
+            _LOGGER.debug(
+                "Adding AC Lighting switch for device %s", device.device.label
+            )
+            entities.append(SmartThingsACLightsSwitch(entry_data.client, device, MAIN))
+        if "samsungce.airConditionerBeep" in main_status:
+            _LOGGER.debug("Adding AC Beep switch for device %s", device.device.label)
+            entities.append(SmartThingsACBeepSwitch(entry_data.client, device, MAIN))
     async_add_entities(entities)
 
 
@@ -243,4 +258,90 @@ class SmartThingsCommandSwitch(SmartThingsSwitch):
             self.switch_capability,
             self.entity_description.command,
             "on",
+        )
+
+
+class SmartThingsACLightsSwitch(SmartThingsEntity, SwitchEntity):
+    """Representation of the AC Lighting control switch for Samsung WindFree AC."""
+
+    def __init__(self, client: Any, device: FullDevice, component: str = MAIN) -> None:
+        """Initialize the AC Lighting switch."""
+        super().__init__(
+            client,
+            device,
+            {Capability("samsungce.airConditionerLighting")},
+            component=component,
+        )
+        self._attr_unique_id = f"{device.device.device_id}_{component}_lighting"
+        _LOGGER.debug(
+            "Initializing AC Lighting switch for device %s", device.device.label
+        )
+
+    @property
+    def name(self) -> str:
+        """Return the name of the AC Lighting switch."""
+        return "Lighting"
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Send command to 'turn on' AC lighting (which sends 'Light_Off')."""
+        _LOGGER.debug("Turning ON AC Lighting for device %s", self.device.device.label)
+        argument = ["mode/vs/0", {"x.com.samsung.da.options": ["Light_Off"]}]
+        _LOGGER.debug("AC Lighting turn_on argument: %s", json.dumps(argument))
+        await self.execute_device_command(
+            Capability("execute"),
+            Command("execute"),
+            argument,
+        )
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Send command to 'turn off' AC lighting (which sends 'Light_On')."""
+        _LOGGER.debug("Turning OFF AC Lighting for device %s", self.device.device.label)
+        argument = ["mode/vs/0", {"x.com.samsung.da.options": ["Light_On"]}]
+        _LOGGER.debug("AC Lighting turn_off argument: %s", json.dumps(argument))
+        await self.execute_device_command(
+            Capability("execute"),
+            Command("execute"),
+            argument,
+        )
+
+
+class SmartThingsACBeepSwitch(SmartThingsEntity, SwitchEntity):
+    """Representation of the AC Beep control switch for Samsung WindFree AC."""
+
+    def __init__(self, client: Any, device: FullDevice, component: str = MAIN) -> None:
+        """Initialize the AC Beep switch."""
+        super().__init__(
+            client,
+            device,
+            {Capability("samsungce.airConditionerBeep")},
+            component=component,
+        )
+        self._attr_unique_id = f"{device.device.device_id}_{component}_ac_beep"
+        _LOGGER.debug("Initializing AC Beep switch for device %s", device.device.label)
+
+    @property
+    def name(self) -> str:
+        """Return the name of the AC Beep switch."""
+        return "Beep"
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Send command to enable beep (using 'Volume_100')."""
+        _LOGGER.debug("Turning ON AC Beep for device %s", self.device.device.label)
+        argument = ["mode/vs/0", {"x.com.samsung.da.options": ["Volume_100"]}]
+        _LOGGER.debug("AC Beep turn_on argument: %s", json.dumps(argument))
+        await self.execute_device_command(
+            Capability("execute"),
+            Command("execute"),
+            argument,
+        )
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Send command to disable beep (using 'Volume_Mute')."""
+        _LOGGER.debug("Turning OFF AC Beep for device %s", self.device.device.label)
+        argument = ["mode/vs/0", {"x.com.samsung.da.options": ["Volume_Mute"]}]
+        _LOGGER.debug("AC Beep turn_off argument: %s", json.dumps(argument))
+        await self.execute_device_command(
+            Capability("execute"),
+            Command("execute"),
+            argument,
         )
