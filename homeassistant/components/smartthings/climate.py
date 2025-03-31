@@ -58,22 +58,22 @@ OPERATING_STATE_TO_ACTION = {
 }
 
 AC_MODE_TO_STATE = {
-    "auto": HVACMode.HEAT_COOL,
+    "auto": HVACMode.AUTO,
     "cool": HVACMode.COOL,
     "dry": HVACMode.DRY,
     "coolClean": HVACMode.COOL,
     "dryClean": HVACMode.DRY,
     "heat": HVACMode.HEAT,
     "heatClean": HVACMode.HEAT,
-    "fanOnly": HVACMode.FAN_ONLY,
+    "fan": HVACMode.FAN_ONLY,
     "wind": HVACMode.FAN_ONLY,
 }
 STATE_TO_AC_MODE = {
-    HVACMode.HEAT_COOL: "auto",
+    HVACMode.AUTO: "auto",
     HVACMode.COOL: "cool",
     HVACMode.DRY: "dry",
     HVACMode.HEAT: "heat",
-    HVACMode.FAN_ONLY: "fanOnly",
+    HVACMode.FAN_ONLY: "fan",
 }
 
 SWING_TO_FAN_OSCILLATION = {
@@ -397,6 +397,8 @@ class SmartThingsAirConditioner(SmartThingsEntity, ClimateEntity):
                 Capability.AIR_CONDITIONER_MODE, Attribute.SUPPORTED_AC_MODES
             ):
                 mode = WIND
+
+        _LOGGER.debug("mode: %s", mode)
 
         tasks.append(
             self.execute_device_command(
