@@ -57,6 +57,20 @@
       },
       "ice_maker": {
         "default": "mdi:delete-variant"
+      },
+      "light": {
+        "default": "mdi:lightbulb",
+        "state": {
+          "on": "mdi:lightbulb-on",
+          "off": "mdi:lightbulb-off"
+        }
+      },
+      "beep": {
+        "default": "mdi:volume-source",
+        "state": {
+          "on": "mdi:volume-high",
+          "off": "mdi:volume-off"
+        }
       }
     }
   }

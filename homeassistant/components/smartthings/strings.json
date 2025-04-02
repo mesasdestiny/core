@@ -478,6 +478,12 @@
       },
       "ice_maker": {
         "name": "Ice maker"
+      },
+      "light": {
+        "name": "Light"
+      },
+      "beep": {
+        "name": "Beep"
       }
     }
   },
