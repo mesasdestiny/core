@@ -111,6 +111,16 @@ CAPABILITY_TO_SWITCHES: dict[Capability | str, SmartThingsSwitchEntityDescriptio
         status_attribute=Attribute.STATUS,
         entity_category=EntityCategory.CONFIG,
     ),
+    Capability.SAMSUNG_CE_AIR_CONDITIONER_LIGHTING: SmartThingsSwitchEntityDescription(
+        key=Capability.SAMSUNG_CE_AIR_CONDITIONER_LIGHTING,
+        translation_key="light",
+        status_attribute=Attribute.LIGHTING,
+    ),
+    Capability.SAMSUNG_CE_AIR_CONDITIONER_BEEP: SmartThingsSwitchEntityDescription(
+        key=Capability.SAMSUNG_CE_AIR_CONDITIONER_BEEP,
+        translation_key="beep",
+        status_attribute=Attribute.BEEP,
+    ),
 }
 
 
